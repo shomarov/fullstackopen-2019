@@ -1,0 +1,16 @@
+title Uusi muistiinpano
+
+note over selain
+selain lähettää lomakedataa
+end note
+note over selain
+javascript koodi luo uuden muistiinpanon,
+lisää sen muistinpanojen listalle, päivittää sivun,
+ja lähettää uuden muistiinpanon palvelimelle
+end note
+selain->palvelin: HTTP POST https://fullstack-exampleapp.herokuapp.com/new_note_spa
+note over palvelin
+palvelin tallentaa muistiinpanon
+end note
+palvelin-->selain: 201, Created
+
