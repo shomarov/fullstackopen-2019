@@ -1,0 +1,45 @@
+{
+  "notes": [
+    {
+      "content": "custom-hooks are awesome!",
+      "id": 1
+    },
+    {
+      "content": "best feature ever <3",
+      "id": 2
+    },
+    {
+      "content": "i have never seen anything like this!",
+      "id": 3
+    },
+    {
+      "content": "wow!",
+      "id": 4
+    },
+    {
+      "content": "omg!",
+      "id": 5
+    },
+    {
+      "content": "last test!",
+      "id": 6
+    }
+  ],
+  "persons": [
+    {
+      "name": "mluukkai",
+      "number": "040-5483923",
+      "id": 1
+    },
+    {
+      "name": "Test Testinsson",
+      "number": "050-2244488",
+      "id": 2
+    },
+    {
+      "name": "Donald Trump",
+      "number": "050-5555555",
+      "id": 3
+    }
+  ]
+}
