@@ -1,31 +1,19 @@
 import React, { useState } from 'react'
-import blogService from '../services/blogs'
+import { connect } from 'react-redux'
+import { removeBlog, likeBlog } from '../reducers/blogReducer'
 
-const Blog = ({ blog, user, blogs, setBlogs }) => {
+const Blog = (props) => {
   const [visible, setVisible] = useState(false)
+  const user = props.user
+  const blog = props.blog
 
   const toggleVisible = () => {
     setVisible(!visible)
   }
 
-  const handleLike = async (blog) => {
-    const updatedBlog = { ...blog }
-
-    updatedBlog.likes = updatedBlog.likes + 1
-    updatedBlog.user = updatedBlog.user.id
-
-    const returnedBlog = await blogService.update(updatedBlog)
-    const updatedBlogs = blogs.filter(b => b.id !== returnedBlog.id).concat(returnedBlog)
-
-    setBlogs(updatedBlogs.sort((blog1, blog2) => blog1.likes - blog2.likes))
-  }
-
-  const handleRemove = async (blog) => {
+  const handleRemove = () => {
     window.confirm(`remove blog ${blog.title} by ${blog.author}`)
-
-    await blogService.remove(blog.id)
-
-    setBlogs(blogs.filter(b => b.id !== blog.id))
+    props.removeBlog(blog)
   }
 
   const blogStyle = {
@@ -52,11 +40,11 @@ const Blog = ({ blog, user, blogs, setBlogs }) => {
       <div style={showWhenVisible} className="otherInfo">
         <div><a href={blog.url}>{blog.url}</a></div>
         <div>{blog.likes} likes
-          <button onClick={() => handleLike(blog)}>like</button>
+          <button onClick={() => props.likeBlog(blog)}>like</button>
           <div>added by {blog.author}</div>
           <div>
             <button style={removeButtonVisible}
-              onClick={() => handleRemove(blog)}>remove</button>
+              onClick={() => handleRemove()}>remove</button>
           </div>
         </div>
       </div>
@@ -64,4 +52,9 @@ const Blog = ({ blog, user, blogs, setBlogs }) => {
   )
 }
 
-export default Blog
+const mapDispatchToProps = {
+  removeBlog,
+  likeBlog
+}
+
+export default connect(null, mapDispatchToProps)(Blog)

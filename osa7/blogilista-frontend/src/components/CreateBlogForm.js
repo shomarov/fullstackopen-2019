@@ -1,63 +1,63 @@
-import React, { useState } from 'react'
-import blogService from '../services/blogs'
+import React from 'react'
+import { useField } from '../hooks'
+import { connect } from 'react-redux'
+import { addBlog } from '../reducers/blogReducer'
+import { blogAddedNotification, hideNotification } from '../reducers/notificationReducer'
 
 const CreateBlogForm = (props) => {
-  const [title, setTitle] = useState('')
-  const [author, setAuthor] = useState('')
-  const [url, setUrl] = useState('')
+  const title = useField('text')
+  const author = useField('text')
+  const url = useField('url')
+
+  const clearFields = () => {
+    title.clear()
+    author.clear()
+    url.clear()
+  }
 
   const addBlog = async (event) => {
     event.preventDefault()
     props.toggleVisibility()
 
-    const newBlog = { title, author, url }
+    const newBlog = {
+      title: title.input.value,
+      author: author.input.value,
+      url: url.input.value
+    }
 
-    const returnedBlog = await blogService.create(newBlog)
-
-    props.setBlogs(props.blogs.concat(returnedBlog))
-    props.setNotification(`a new blog ${title} by ${author} added`)
+    props.addBlog(newBlog)
+    props.blogAddedNotification(newBlog.title, newBlog.author)
 
     setTimeout(() => {
-      props.setNotification(null)
+      props.hideNotification()
     }, 5000)
 
-    setTitle('')
-    setAuthor('')
-    setUrl('')
+    clearFields()
   }
 
   return (
     <form onSubmit={addBlog}>
       <div>
         title:
-        <input
-          type="text"
-          value={title}
-          name="Title"
-          onChange={({ target }) => setTitle(target.value)}
-        />
+        <input {...title.input} />
       </div>
       <div>
         author:
-        <input
-          type="text"
-          value={author}
-          name="Author"
-          onChange={({ target }) => setAuthor(target.value)}
-        />
+        <input {...author.input} />
       </div>
       <div>
         url:
-        <input
-          type="text"
-          value={url}
-          name="URL"
-          onChange={({ target }) => setUrl(target.value)}
-        />
+        <input {...url.input} />
       </div>
       <button type="submit">create</button>
     </form>
   )
 }
 
-export default CreateBlogForm
+const mapDispatchToProps = {
+  addBlog,
+  blogAddedNotification,
+  hideNotification
+}
+
+export default connect(null, mapDispatchToProps)(CreateBlogForm)
