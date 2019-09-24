@@ -3,11 +3,18 @@ const Blog = require('../models/blog')
 const User = require('../models/user')
 const jwt = require('jsonwebtoken')
 
-blogsRouter.get('/', async (request, response) => {
-  const blogs = await Blog
-    .find({}).populate('user', { username: 1, name: 1 })
 
-  response.json(blogs.map(blog => blog.toJSON()))
+blogsRouter.get('/', async (request, response, next) => {
+  try {
+    const blogs = await Blog
+      .find({})
+      .populate('user', { username: 1, name: 1 })
+      .populate('comments')
+
+    response.json(blogs.map(blog => blog.toJSON()))
+  } catch (exception) {
+    next(exception)
+  }
 })
 
 blogsRouter.get('/:id', async (request, response, next) => {
@@ -15,6 +22,7 @@ blogsRouter.get('/:id', async (request, response, next) => {
     const blog = await Blog
       .findById(request.params.id)
       .populate('user', { username: 1, name: 1 })
+      .populate('comments')
 
     return response.json(blog.toJSON())
   } catch (exception) {
@@ -90,5 +98,6 @@ blogsRouter.delete('/:id', async (request, response, next) => {
     next(exception)
   }
 })
+
 
 module.exports = blogsRouter

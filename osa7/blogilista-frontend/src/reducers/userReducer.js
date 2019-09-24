@@ -1,16 +1,31 @@
 import blogService from '../services/blogs'
+import loginService from '../services/login'
+import { initializeBlogs } from './blogReducer'
+import { showError, hideError } from './errorReducer'
 
-export const login = (user) => {
+export const login = (username, password) => {
   return async dispatch => {
-    window.localStorage.setItem(
-      'loggedInUser', JSON.stringify(user)
-    )
-    blogService.setToken(user.token)
+    try {
+      const user = await loginService.login({
+        username: username.input.value,
+        password: password.input.value
+      })
 
-    dispatch({
-      type: 'LOGIN',
-      data: user
-    })
+      window.localStorage.setItem(
+        'loggedInUser', JSON.stringify(user)
+      )
+      blogService.setToken(user.token)
+      dispatch(initializeBlogs())
+      dispatch({
+        type: 'LOGIN',
+        data: user
+      })
+    } catch (exception) {
+      dispatch(showError())
+      setTimeout(() => {
+        dispatch(hideError())
+      }, 5000)
+    }
   }
 }
 
@@ -26,6 +41,7 @@ export const setUser = (user) => {
 
 export const logout = () => {
   return async dispatch => {
+    window.localStorage.clear()
     dispatch({
       type: 'LOGOUT'
     })

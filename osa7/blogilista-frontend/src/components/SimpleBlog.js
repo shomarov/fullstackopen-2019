@@ -12,4 +12,5 @@ const SimpleBlog = ({ blog, onClick }) => (
   </div>
 )
 
+
 export default SimpleBlog

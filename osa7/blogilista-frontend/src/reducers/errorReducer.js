@@ -26,5 +26,4 @@ const notificationReducer = (state = null, action) => {
 }
 
 
-
 export default notificationReducer
