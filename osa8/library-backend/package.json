@@ -1,0 +1,19 @@
+{
+  "name": "osa8",
+  "version": "0.0.1",
+  "description": "fullstack-open osa8, graphql",
+  "main": "library-backend.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "apollo-server": "^2.9.3",
+    "graphql": "^14.5.7",
+    "mongoose": "^5.7.1",
+    "mongoose-unique-validator": "^2.0.3",
+    "uuid": "^3.3.3"
+  },
+  "devDependencies": {}
+}
