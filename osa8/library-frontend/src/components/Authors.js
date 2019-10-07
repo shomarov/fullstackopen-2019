@@ -9,6 +9,7 @@ const ALL_AUTHORS = gql`
       name
       born
       bookCount
+      id
   }
 }
 `
@@ -21,6 +22,7 @@ const EDIT_AUTHOR = gql`
     ) {
       name
       born
+      id
     }
   }
 `
@@ -33,7 +35,15 @@ const Authors = (props) => {
   const result = useQuery(ALL_AUTHORS)
 
   const [editAuthor] = useMutation(EDIT_AUTHOR, {
-    refetchQueries: [{ query: ALL_AUTHORS }]
+    update: (store, response) => {
+      const dataInStore = store.readQuery({ query: ALL_AUTHORS })
+      dataInStore.allAuthors.map(author =>
+        author.id !== response.data.editAuthor.id ? author : response.data.editAuthor)
+      store.writeQuery({
+        query: ALL_AUTHORS,
+        data: dataInStore
+      })
+    }
   })
 
   if (!props.show || result.loading) {

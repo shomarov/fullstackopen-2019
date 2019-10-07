@@ -11,7 +11,7 @@ const ADD_BOOK = gql`
       genres: $genres
     ) {
       title
-      author
+      author {name}
       published
       genres
       id
@@ -28,7 +28,7 @@ const ALL_AUTHORS_AND_BOOKS = gql`
   },
   allBooks {
     title
-    author
+    author {name}
     published
   }
 }
@@ -52,9 +52,13 @@ const NewBook = (props) => {
   const submit = async (e) => {
     e.preventDefault()
 
+    try {
     await addBook({
-      variables: { title, author, published, genres }
+      variables: { title, author, published: parseInt(published), genres }
     })
+  } catch (e) {
+    console.log(e)
+  }
 
     setTitle('')
     setPublished('')
@@ -90,7 +94,7 @@ const NewBook = (props) => {
           <input
             type='number'
             value={published}
-            onChange={({ target }) => setPublished(parseInt(target.value))}
+            onChange={({ target }) => setPublished(target.value)}
           />
         </div>
         <div>

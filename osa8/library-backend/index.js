@@ -64,8 +64,8 @@ const typeDefs = gql`
     ): Author
     addBook(
       title: String!
-      published: Int!
       author: String!
+      published: Int!
       genres: [String!]
     ): Book
     editAuthor(
@@ -89,8 +89,8 @@ const resolvers = {
     allBooks: async (root, args) => {
       const author = await Author.findOne({ name: args.author })
       return author
-        ? Book.find({ author, genres: { $in: [new RegExp(args.genre)] } }).populate('author')
-        : Book.find({ genres: { $in: [new RegExp(args.genre)] } }).populate('author')
+        ? Book.find({ author }).populate('author')
+        : Book.find({}).populate('author')
     },
     allAuthors: (root) => Author.find({}).populate('book'),
     me: (root, args, context) => {
@@ -99,16 +99,20 @@ const resolvers = {
   },
   Author: {
     books: async (root) => {
-      console.log(root)
       return Book.find({ author: root }).populate('author')
     },
     bookCount: async (root) => {
-      console.log(root)
       return Book.find({ author: root }).populate('author').countDocuments()
     }
   },
   Mutation: {
-    addAuthor: async (root, args) => {
+    addAuthor: async (root, args, context) => {
+      const currentUser = context.currentUser
+
+      if (!currentUser) {
+        throw new AuthenticationError("not authenticated")
+      }
+
       const author = new Author({ ...args })
       try {
         await author.save()
@@ -137,7 +141,6 @@ const resolvers = {
       try {
         await author.save()
         await book.save()
-        await currentUser.save()
       } catch (error) {
         throw new UserInputError(error.message, {
           invalidArgs: args,
@@ -171,7 +174,7 @@ const resolvers = {
       }
       return author
     },
-    
+
     createUser: async (root, args) => {
       const user = new User({ username: args.username })
 
