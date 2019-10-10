@@ -1,11 +1,21 @@
-import React, { useState } from 'react'
+import React from 'react'
+import { gql } from 'apollo-boost'
 import { useQuery } from '@apollo/react-hooks'
 
-const Books = (props) => {
-  const [genreToFilter, setGenreToFilter] = useState('')
+const RECOMMENDED_BOOKS = gql`
+  query allBooks($favoriteGenre: String!) {
+    allBooks(genre: $favoriteGenre) {
+    title
+    author {name}
+    published
+    genres
+  }
+}
+`
 
-  const result = useQuery(props.ALL_BOOKS, {
-    variables: { genreToFilter }
+const Recommended = (props) => {
+  const result = useQuery(RECOMMENDED_BOOKS, {
+    variables: { favoriteGenre: props.user.favoriteGenre }
   })
 
   if (!props.show || result.loading) {
@@ -13,12 +23,11 @@ const Books = (props) => {
   }
 
   const books = result.data.allBooks
-  const genres = result.data.allGenres
 
   return (
     <div>
-      <h2>books</h2>
-
+      <h2>recommendations</h2>
+      <p>books in your favorite genre <strong>{props.user.favoriteGenre}</strong></p>
       <table>
         <tbody>
           <tr>
@@ -39,12 +48,8 @@ const Books = (props) => {
           )}
         </tbody>
       </table>
-
-      {genres.map(g =>
-        <button key={g} onClick={() => setGenreToFilter(g)}>{g}</button>)}
-      <button onClick={() => setGenreToFilter('')}>all genres</button>
     </div>
   )
 }
 
-export default Books
+export default Recommended

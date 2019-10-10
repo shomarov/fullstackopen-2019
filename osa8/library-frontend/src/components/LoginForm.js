@@ -1,11 +1,20 @@
 import React, { useState } from 'react'
 import { gql } from 'apollo-boost'
-import { useMutation } from '@apollo/react-hooks'
+import { useLazyQuery, useMutation } from '@apollo/react-hooks'
 
 const LOGIN = gql`
 mutation login($username: String!, $password: String!) {
   login(username: $username, password: $password) {
     value
+  }
+}
+`
+
+const ME = gql`
+query {
+  me {
+    username
+    favoriteGenre
   }
 }
 `
@@ -22,6 +31,8 @@ const LoginForm = (props) => {
     onError: handleError
   })
 
+  const [getUser, user] = useLazyQuery(ME)
+
   if (!props.show) {
     return null
   }
@@ -36,12 +47,22 @@ const LoginForm = (props) => {
     if (result) {
       const token = result.data.login.value
       props.setToken(token)
-      console.log(token)
       localStorage.setItem('library-user-token', token)
+      getUser()
     }
 
     setUsername('')
     setPassword('')
+  }
+
+  if (user.data && user.data.me) {
+    const loggedInUser = {
+      username: user.data.me.username,
+      favoriteGenre: user.data.me.favoriteGenre
+    }
+    props.setUser(loggedInUser)
+    localStorage.setItem('library-user', JSON.stringify(loggedInUser))
+    props.setPage('books')
   }
 
   return (

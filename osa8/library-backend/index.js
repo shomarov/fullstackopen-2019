@@ -1,8 +1,10 @@
-const { ApolloServer, UserInputError, AuthenticationError, gql } = require('apollo-server')
+const { ApolloServer, UserInputError, AuthenticationError, gql, PubSub } = require('apollo-server')
 const mongoose = require('mongoose')
 const User = require('./models/user')
 const Author = require('./models/author')
 const Book = require('./models/book')
+
+const pubsub = new PubSub()
 
 const jwt = require('jsonwebtoken')
 
@@ -54,6 +56,7 @@ const typeDefs = gql`
     authorCount: Int!
     allBooks(author: String, genre: String): [Book!]!
     allAuthors: [Author!]!
+    allGenres: [String!]!
     me: User
   }
 
@@ -74,11 +77,16 @@ const typeDefs = gql`
     ): Author
     createUser(
       username: String!
+      favoriteGenre: String!
     ): User
     login(
       username: String!
       password: String!
     ): Token
+  }
+
+  type Subscription {
+    bookAdded: Book
   }
 `
 
@@ -92,18 +100,20 @@ const resolvers = {
         ? Book.find({ author, genres: { $in: [new RegExp(args.genre)] } }).populate('author')
         : Book.find({ genres: { $in: [new RegExp(args.genre)] } }).populate('author')
     },
-    allAuthors: (root) => Author.find({}).populate('book'),
+    allAuthors: (root) => Author.find({}),
+    allGenres: async (root) => {
+      const books = await Book.find({})
+      return [...new Set(books.map(b => b.genres).flat())]
+    },
     me: (root, args, context) => {
       return context.currentUser
     }
   },
   Author: {
     books: async (root) => {
-      console.log(root)
       return Book.find({ author: root }).populate('author')
     },
     bookCount: async (root) => {
-      console.log(root)
       return Book.find({ author: root }).populate('author').countDocuments()
     }
   },
@@ -143,6 +153,9 @@ const resolvers = {
           invalidArgs: args,
         })
       }
+
+      pubsub.publish('BOOK_ADDED', { bookAdded: book })
+
       return book
     },
     editAuthor: async (root, args, context) => {
@@ -171,9 +184,9 @@ const resolvers = {
       }
       return author
     },
-    
+
     createUser: async (root, args) => {
-      const user = new User({ username: args.username })
+      const user = new User({ username: args.username, favoriteGenre: args.favoriteGenre })
 
       try {
         return user.save()
@@ -196,7 +209,12 @@ const resolvers = {
       }
 
       return { value: jwt.sign(userForToken, JWT_SECRET) }
-    },
+    }
+  },
+  Subscription: {
+    bookAdded: {
+      subscribe: () => pubsub.asyncIterator(['BOOK_ADDED'])
+    }
   }
 }
 
@@ -215,6 +233,7 @@ const server = new ApolloServer({
   }
 })
 
-server.listen().then(({ url }) => {
+server.listen().then(({ url, subscriptionsUrl }) => {
   console.log(`Server ready at ${url}`)
+  console.log(`Subscriptions ready at ${subscriptionsUrl}`)
 })
