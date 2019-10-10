@@ -57,7 +57,7 @@ const typeDefs = gql`
     allBooks(author: String, genre: String): [Book!]!
     allAuthors: [Author!]!
     allGenres: [String!]!
-    me: User
+    me: User!
   }
 
   type Mutation {

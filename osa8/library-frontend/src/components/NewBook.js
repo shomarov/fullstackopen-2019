@@ -15,7 +15,7 @@ const NewBook = (props) => {
     e.preventDefault()
 
     await props.addBook({
-      variables: { title, author, published, genres }
+      variables: { title, author, published: parseInt(published), genres }
     })
 
     setTitle('')
@@ -52,7 +52,7 @@ const NewBook = (props) => {
           <input
             type='number'
             value={published}
-            onChange={({ target }) => setPublished(parseInt(target.value))}
+            onChange={({ target }) => setPublished(target.value)}
           />
         </div>
         <div>

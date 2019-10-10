@@ -13,7 +13,7 @@ const Books = (props) => {
   }
 
   const books = result.data.allBooks
-  const genres = result.data.allGenres
+  const genres = props.genres.data.allGenres
 
   return (
     <div>

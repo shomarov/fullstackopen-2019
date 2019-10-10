@@ -11,7 +11,7 @@ mutation login($username: String!, $password: String!) {
 `
 
 const ME = gql`
-query {
+{
   me {
     username
     favoriteGenre

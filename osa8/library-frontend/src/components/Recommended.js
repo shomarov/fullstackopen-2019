@@ -1,21 +1,10 @@
 import React from 'react'
-import { gql } from 'apollo-boost'
 import { useQuery } from '@apollo/react-hooks'
 
-const RECOMMENDED_BOOKS = gql`
-  query allBooks($favoriteGenre: String!) {
-    allBooks(genre: $favoriteGenre) {
-    title
-    author {name}
-    published
-    genres
-  }
-}
-`
 
 const Recommended = (props) => {
-  const result = useQuery(RECOMMENDED_BOOKS, {
-    variables: { favoriteGenre: props.user.favoriteGenre }
+  const result = useQuery(props.ALL_BOOKS, {
+    variables: { genreToFilter: props.user.favoriteGenre }
   })
 
   if (!props.show || result.loading) {
@@ -51,5 +40,6 @@ const Recommended = (props) => {
     </div>
   )
 }
+
 
 export default Recommended
