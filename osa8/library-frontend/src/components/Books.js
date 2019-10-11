@@ -1,18 +1,11 @@
-import React, { useState } from 'react'
-import { useQuery } from '@apollo/react-hooks'
+import React from 'react'
 
 const Books = (props) => {
-  const [genreToFilter, setGenreToFilter] = useState('')
-
-  const result = useQuery(props.ALL_BOOKS, {
-    variables: { genreToFilter }
-  })
-
-  if (!props.show || result.loading) {
+  if (!props.show || props.books.loading) {
     return null
   }
 
-  const books = result.data.allBooks
+  const books = props.books.data.allBooks
   const genres = props.genres.data.allGenres
 
   return (
@@ -41,8 +34,8 @@ const Books = (props) => {
       </table>
 
       {genres.map(g =>
-        <button key={g} onClick={() => setGenreToFilter(g)}>{g}</button>)}
-      <button onClick={() => setGenreToFilter('')}>all genres</button>
+        <button key={g} onClick={() => props.setGenreToFilter(g)}>{g}</button>)}
+      <button onClick={() => props.setGenreToFilter()}>all genres</button>
     </div>
   )
 }

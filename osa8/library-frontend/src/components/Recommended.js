@@ -1,17 +1,12 @@
 import React from 'react'
-import { useQuery } from '@apollo/react-hooks'
 
 
 const Recommended = (props) => {
-  const result = useQuery(props.ALL_BOOKS, {
-    variables: { genreToFilter: props.user.favoriteGenre }
-  })
-
-  if (!props.show || result.loading) {
+  if (!props.show || props.books.loading) {
     return null
   }
 
-  const books = result.data.allBooks
+  const books = props.books.data.allBooks
 
   return (
     <div>

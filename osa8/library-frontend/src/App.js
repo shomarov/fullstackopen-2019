@@ -54,24 +54,6 @@ const ADD_BOOK = gql`
   }
 `
 
-/* const ALL_BOOKS_AND_AUTHORS = gql`
-query main($genreToFilter: String) {
-  allBooks(genre: $genreToFilter) {
-      title
-      author {name}
-      published
-      genres
-      id
-  },
-  allAuthors {
-    name
-    born
-    bookCount
-    id
-  },
-  allGenres
-  }
-` */
 
 const BOOK_ADDED = gql`
   subscription {
@@ -85,13 +67,31 @@ const BOOK_ADDED = gql`
   }
 `
 
+const AUTHOR_ADDED = gql`
+  subscription {
+    authorAdded {
+      name
+      born
+      bookCount
+      id
+    }
+  }
+`
+
 const App = () => {
   const [page, setPage] = useState('authors')
   const [token, setToken] = useState(null)
   const [user, setUser] = useState(null)
+  const [genreToFilter, setGenreToFilter] = useState()
+
+  const client = useApolloClient()
 
   const authors = useQuery(ALL_AUTHORS)
-  const books = useQuery(ALL_BOOKS)
+
+  const books = useQuery(ALL_BOOKS, {
+    variables: { genreToFilter }
+  })
+
   const genres = useQuery(ALL_GENRES)
 
   useEffect(() => {
@@ -102,42 +102,101 @@ const App = () => {
     }
   }, [])
 
-  const client = useApolloClient()
-
   const handleError = (error) => {
     console.log(error.graphQLErrors[0].message)
   }
 
-  const updateCacheWith = (addedBook) => {
+  const updateCacheWithNewBook = (addedBook) => {
     const includedIn = (set, object) =>
       set.map(b => b.id).includes(object.id)
 
-    const dataInStore = client.readQuery({ query: ALL_BOOKS })
+    const dataInStore = client.readQuery({
+      query: ALL_BOOKS
+    })
     if (!includedIn(dataInStore.allBooks, addedBook)) {
-      console.log(addedBook)
-      console.log(dataInStore.allBooks)
       client.writeQuery({
         query: ALL_BOOKS,
-        data: { allBooks: dataInStore.allBooks.concat(addedBook)}
+        data: { allBooks: dataInStore.allBooks.concat(addedBook) }
       })
     }
-    console.log(dataInStore.allBooks)
+  }
+
+  const updateCacheWithNewAuthor = (addedAuthor) => {
+    const includedIn = (set, object) =>
+      set.map(b => b.id).includes(object.id)
+
+    const dataInStore = client.readQuery({
+      query: ALL_AUTHORS,
+    })
+    if (!includedIn(dataInStore.allAuthors, addedAuthor)) {
+      client.writeQuery({
+        query: ALL_AUTHORS,
+        data: { allAuthors: dataInStore.allAuthors.concat(addedAuthor) }
+      })
+    }
+  }
+
+  const updateCacheWithNewBookInFilters = (addedBook) => {
+    const includedIn = (set, object) =>
+      set.map(b => b.id).includes(object.id)
+
+    addedBook.genres.forEach(genre => {
+      try {
+        const dataInStore = client.readQuery({
+          query: ALL_BOOKS,
+          variables: { genreToFilter: genre }
+        })
+
+        if (!includedIn(dataInStore.allBooks, addedBook)) {
+          client.writeQuery({
+            query: ALL_BOOKS,
+            variables: { genreToFilter: genre },
+            data: { allBooks: dataInStore.allBooks.concat(addedBook) }
+          })
+        }
+      } catch (e) { }
+    })
+  }
+
+  const updateCacheWithNewGenre = (genres) => {
+    const includedIn = (set, object) =>
+      set.includes(object)
+
+    const dataInStore = client.readQuery({
+      query: ALL_GENRES,
+    })
+
+    genres.forEach(genre => {
+      if (!includedIn(dataInStore.allGenres, genre)) {
+        client.writeQuery({
+          query: ALL_GENRES,
+          data: { allGenres: dataInStore.allGenres.concat(genre) }
+        })
+      }
+    })
   }
 
   useSubscription(BOOK_ADDED, {
     onSubscriptionData: ({ subscriptionData }) => {
-      console.log(subscriptionData)
       const addedBook = subscriptionData.data.bookAdded
-      updateCacheWith(addedBook)
+      updateCacheWithNewBook(addedBook)
+      updateCacheWithNewBookInFilters(addedBook)
+      updateCacheWithNewGenre(addedBook.genres)
+    }
+  })
+
+  useSubscription(AUTHOR_ADDED, {
+    onSubscriptionData: ({ subscriptionData }) => {
+      const addedAuthor = subscriptionData.data.authorAdded
+      updateCacheWithNewAuthor(addedAuthor)
     }
   })
 
   const [addBook] = useMutation(ADD_BOOK, {
     onError: handleError,
-    update: (store, response) => {
-      updateCacheWith(response.data.addBook)
-    },
-    refetchQueries: { ALL_AUTHORS, ALL_GENRES }
+    update: (cache, response) => {
+      updateCacheWithNewBook(response.data.addBook)
+    }
   })
 
   const logout = () => {
@@ -146,19 +205,36 @@ const App = () => {
     client.resetStore()
   }
 
+  console.log(authors)
+
   if (books.loading) {
     return 'loading...'
+  }
+
+  const handleClickBooks = () => {
+    setPage('books')
+    setGenreToFilter()
+  }
+
+  const handleClickRecommend = () => {
+    setPage('recommended')
+    setGenreToFilter(user.favoriteGenre)
   }
 
   return (
     <div>
       <div>
         <button onClick={() => setPage('authors')}>authors</button>
-        <button onClick={() => setPage('books')}>books</button>
-        {token ? <button onClick={() => setPage('add')}>add book</button>
+        <button onClick={() => handleClickBooks()}>books</button>
+        {token
+          ?
+          <>
+            <button onClick={() => setPage('add')}>add book</button>
+            <button onClick={() => handleClickRecommend()}>recommend</button>
+            <button onClick={logout}>logout</button>
+          </>
           : <button onClick={() => setPage('login')}>login</button>}
-        {token ? <button onClick={() => setPage('recommended')}>recommend</button> : null}
-        {token ? <button onClick={logout}>logout</button> : null}
+
       </div>
 
       <Authors
@@ -169,8 +245,10 @@ const App = () => {
 
       <Books
         show={page === 'books'}
+        user={user}
+        books={books}
         genres={genres}
-        ALL_BOOKS={ALL_BOOKS}
+        setGenreToFilter={setGenreToFilter}
       />
 
       <NewBook
@@ -180,8 +258,9 @@ const App = () => {
 
       {user ? <Recommended
         show={page === 'recommended'}
+        setGenreToFilter={(genre) => setGenreToFilter(genre)}
         user={user}
-        ALL_BOOKS={ALL_BOOKS}
+        books={books}
       />
         : null}
 

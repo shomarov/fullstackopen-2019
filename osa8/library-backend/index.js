@@ -87,6 +87,7 @@ const typeDefs = gql`
 
   type Subscription {
     bookAdded: Book
+    authorAdded: Author
   }
 `
 
@@ -145,8 +146,8 @@ const resolvers = {
       const book = new Book({ ...args, author })
 
       try {
-        await author.save()
         await book.save()
+        await author.save()
         await currentUser.save()
       } catch (error) {
         throw new UserInputError(error.message, {
@@ -155,6 +156,7 @@ const resolvers = {
       }
 
       pubsub.publish('BOOK_ADDED', { bookAdded: book })
+      pubsub.publish('AUTHOR_ADDED', { authorAdded: author })
 
       return book
     },
@@ -214,6 +216,9 @@ const resolvers = {
   Subscription: {
     bookAdded: {
       subscribe: () => pubsub.asyncIterator(['BOOK_ADDED'])
+    },
+    authorAdded: {
+      subscribe: () => pubsub.asyncIterator(['AUTHOR_ADDED'])
     }
   }
 }
