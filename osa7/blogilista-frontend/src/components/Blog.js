@@ -29,7 +29,7 @@ const Blog = (props) => {
         <a href={blog.url}>{blog.url}</a>
       </div>
       <div>
-        {blog.likes} likes <button onClick={() => props.likeBlog(blog)}>like</button>
+        {blog.likes} likes <button id='likeBlogButton' onClick={() => props.likeBlog(blog)}>like</button>
       </div>
       <div>
         added by {blog.author}

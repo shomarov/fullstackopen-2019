@@ -3,6 +3,21 @@ import { connect } from 'react-redux'
 import { useField } from '../hooks'
 import { login } from '../reducers/userReducer'
 
+import styled from 'styled-components'
+
+const Button = styled.button`
+  background: Bisque;
+  font-size: 1em;
+  margin: 1em;
+  padding: 0.25em 1em;
+  border: 2px solid Chocolate;
+  border-radius: 3px;
+`
+
+const Input = styled.input`
+  margin: 0.25em;
+`
+
 const LoginForm = (props) => {
   const username = useField('text')
   const password = useField('password')
@@ -24,13 +39,13 @@ const LoginForm = (props) => {
       <form onSubmit={handleLogin}>
         <div>
           username
-          <input {...username.input} />
+          <Input id='username' {...username.input} />
         </div>
         <div>
           password
-          <input {...password.input} />
+          <Input id='password' {...password.input} />
         </div>
-        <button type="submit">login</button>
+        <Button id='loginButton' type="submit">login</Button>
       </form>
     </div>
   )

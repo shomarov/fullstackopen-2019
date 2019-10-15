@@ -110,15 +110,17 @@ const App = () => {
     const includedIn = (set, object) =>
       set.map(b => b.id).includes(object.id)
 
-    const dataInStore = client.readQuery({
-      query: ALL_BOOKS
-    })
-    if (!includedIn(dataInStore.allBooks, addedBook)) {
-      client.writeQuery({
-        query: ALL_BOOKS,
-        data: { allBooks: dataInStore.allBooks.concat(addedBook) }
+    try {
+      const dataInStore = client.readQuery({
+        query: ALL_BOOKS
       })
-    }
+      if (!includedIn(dataInStore.allBooks, addedBook)) {
+        client.writeQuery({
+          query: ALL_BOOKS,
+          data: { allBooks: dataInStore.allBooks.concat(addedBook) }
+        })
+      }
+    } catch (e) { }
   }
 
   const updateCacheWithNewAuthor = (addedAuthor) => {
@@ -140,12 +142,16 @@ const App = () => {
     const includedIn = (set, object) =>
       set.map(b => b.id).includes(object.id)
 
+      console.log(addedBook)
+
     addedBook.genres.forEach(genre => {
       try {
         const dataInStore = client.readQuery({
           query: ALL_BOOKS,
           variables: { genreToFilter: genre }
         })
+
+        console.log(dataInStore)
 
         if (!includedIn(dataInStore.allBooks, addedBook)) {
           client.writeQuery({
@@ -154,6 +160,8 @@ const App = () => {
             data: { allBooks: dataInStore.allBooks.concat(addedBook) }
           })
         }
+
+        console.log(dataInStore)
       } catch (e) { }
     })
   }
@@ -175,6 +183,8 @@ const App = () => {
       }
     })
   }
+
+  console.log(books)
 
   useSubscription(BOOK_ADDED, {
     onSubscriptionData: ({ subscriptionData }) => {
@@ -205,8 +215,6 @@ const App = () => {
     client.resetStore()
   }
 
-  console.log(authors)
-
   if (books.loading) {
     return 'loading...'
   }
@@ -217,8 +225,9 @@ const App = () => {
   }
 
   const handleClickRecommend = () => {
-    setPage('recommended')
     setGenreToFilter(user.favoriteGenre)
+    setPage('recommended')
+    console.log(user)
   }
 
   return (

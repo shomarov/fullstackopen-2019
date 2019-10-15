@@ -39,17 +39,17 @@ const CreateBlogForm = (props) => {
     <form onSubmit={addBlog}>
       <div>
         title:
-        <input {...title.input} />
+        <input id='title' {...title.input} />
       </div>
       <div>
         author:
-        <input {...author.input} />
+        <input id='author' {...author.input} />
       </div>
       <div>
         url:
-        <input {...url.input} />
+        <input id='url' {...url.input} />
       </div>
-      <button type="submit">create</button>
+      <button id='submitButton' type="submit">create</button>
     </form>
   )
 }

@@ -4,20 +4,26 @@ import { Link } from 'react-router-dom'
 import { logout } from '../reducers/userReducer'
 import Notification from '../components/Notification'
 
+import styled from 'styled-components'
+
+const Navigation = styled.div`
+  background: BurlyWood;
+  padding: 1em;
+`
+
 const style = {
   padding: 5,
-  background: 'lightgrey'
 }
 
 const Menu = (props) => {
   return (
     <div>
-      <div style={style}>
-        <Link to="/" style={style}>blogs</Link>
-        <Link to="/users" style={style}>users</Link>
+      <Navigation>
+        <Link to="/">blogs</Link>
+        <Link to="/users">users</Link>
         <span style={style}>{props.user.name} logged in</span>
-        <button onClick={() => props.logout()} >logout</button>
-      </div>
+        <button id='logoutButton' onClick={() => props.logout()} >logout</button>
+      </Navigation>
       <Notification message={props.notification} />
       <h2>blog app</h2>
     </div>

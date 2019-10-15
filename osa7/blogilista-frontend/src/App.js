@@ -16,6 +16,19 @@ import LoginForm from './components/LoginForm'
 import Users from './components/Users'
 import User from './components/User'
 
+import styled from 'styled-components'
+
+const Page = styled.div`
+  padding: 1em;
+  background: papayawhip;
+`
+
+const Footer = styled.div`
+  background: Chocolate;
+  padding: 1em;
+  margin-top: 1em;
+`
+
 
 const App = (props) => {
   const user = props.user
@@ -42,12 +55,14 @@ const App = (props) => {
     return (
       <div>
         <Error message={error} />
+        <h2>Blogilista</h2>
         {loginForm()}
       </div>
     )
   }
 
   return (
+    <Page>
     <Router>
       <Menu />
       <Route exact path="/" render={() => <Blogs />} />
@@ -60,6 +75,10 @@ const App = (props) => {
         <User id={match.params.id} />
       } />
     </Router>
+    <Footer>
+        <em>Blogilista app, Department of Computer Science 2019</em>
+      </Footer>
+    </Page>
   )
 }
 

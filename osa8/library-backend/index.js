@@ -112,10 +112,12 @@ const resolvers = {
   },
   Author: {
     books: async (root) => {
-      return Book.find({ author: root }).populate('author')
+      const author = await Author.findById(root.id)
+      return author.books.populate('book')
     },
     bookCount: async (root) => {
-      return Book.find({ author: root }).populate('author').countDocuments()
+      const author = await Author.findById(root.id)
+      return author.books.length
     }
   },
   Mutation: {
@@ -145,10 +147,11 @@ const resolvers = {
 
       const book = new Book({ ...args, author })
 
+      author.books.push(book)
+
       try {
         await book.save()
         await author.save()
-        await currentUser.save()
       } catch (error) {
         throw new UserInputError(error.message, {
           invalidArgs: args,

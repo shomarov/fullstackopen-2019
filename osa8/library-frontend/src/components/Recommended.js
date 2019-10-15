@@ -7,7 +7,7 @@ const Recommended = (props) => {
   }
 
   const books = props.books.data.allBooks
-
+  
   return (
     <div>
       <h2>recommendations</h2>

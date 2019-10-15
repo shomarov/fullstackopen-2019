@@ -9,7 +9,7 @@ const Blogs = (props) => {
   const blogFormRef = React.createRef()
 
   const blogForm = () => (
-    <Togglable buttonLabel='create new blog entry' ref={blogFormRef}>
+    <Togglable elementId='createNewBlogButton' buttonLabel='create new blog entry' ref={blogFormRef}>
       <CreateBlogForm
         toggleVisibility={() => blogFormRef.current.toggleVisibility()}
       />
